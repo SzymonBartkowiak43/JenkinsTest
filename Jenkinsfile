@@ -11,27 +11,46 @@ pipeline {
                 sh "mvn clean package"
             }
         }
-        stage('Deploy to Digital Ocean') {
+        stage('Deploy to Server') {
             steps {
                 script {
                     withCredentials([sshUserPrivateKey(credentialsId: 'digitalocean-ssh-key', keyFileVariable: 'SSH_KEY_FILE')]) {
-
                         def remoteUser = "root"
                         def remoteHost = "167.99.243.51"
-                        def remotePath = "/opt/kebabbb" // <-- Ta ścieżka jest poprawna
+                        def remotePath = "/opt/springapp"
                         def jarName = "app.jar"
                         def localJarPath = "target/jenkins-spring-example-0.0.1-SNAPSHOT.jar"
 
-                        // ===================================================================
-                        // KROK 0: STWORZENIE KATALOGU (TA LINIA ZOSTAŁA PRZYWRÓCONA)
-                        // ===================================================================
+                        // Create deployment directory
                         sh "ssh -i ${SSH_KEY_FILE} -o StrictHostKeyChecking=no ${remoteUser}@${remoteHost} 'mkdir -p ${remotePath}'"
 
-                        // Krok 1: Skopiowanie pliku .jar
+                        // Copy the JAR file
                         sh "scp -i ${SSH_KEY_FILE} -o StrictHostKeyChecking=no ${localJarPath} ${remoteUser}@${remoteHost}:${remotePath}/${jarName}"
 
-                        // Krok 2: Zrestartowanie usługi 'kebabbb' na serwerze
-                        sh "ssh -i ${SSH_KEY_FILE} -o StrictHostKeyChecking=no ${remoteUser}@${remoteHost} 'systemctl daemon-reload && systemctl restart kebabbb'"
+                        // Create a systemd service file if it doesn't exist
+                        sh """
+                            ssh -i ${SSH_KEY_FILE} -o StrictHostKeyChecking=no ${remoteUser}@${remoteHost} 'cat > /etc/systemd/system/springapp.service << EOF
+[Unit]
+Description=Spring Boot Application
+After=network.target
+
+[Service]
+User=root
+ExecStart=/usr/bin/java -jar ${remotePath}/${jarName}
+SuccessExitStatus=143
+Restart=on-failure
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
+EOF'
+                        """
+
+                        // Enable and restart the service
+                        sh "ssh -i ${SSH_KEY_FILE} -o StrictHostKeyChecking=no ${remoteUser}@${remoteHost} 'systemctl daemon-reload && systemctl enable springapp && systemctl restart springapp'"
+
+                        // Check service status
+                        sh "ssh -i ${SSH_KEY_FILE} -o StrictHostKeyChecking=no ${remoteUser}@${remoteHost} 'systemctl status springapp'"
                     }
                 }
             }
@@ -43,10 +62,10 @@ pipeline {
             cleanWs()
         }
         success {
-            echo 'Pipeline zakończony sukcesem!'
+            echo 'Pipeline completed successfully!'
         }
         failure {
-            echo 'Pipeline zakończył się błędem.'
+            echo 'Pipeline failed.'
         }
     }
 }
