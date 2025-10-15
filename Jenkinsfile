@@ -24,10 +24,20 @@ pipeline {
                         // Create deployment directory
                         sh "ssh -i ${SSH_KEY_FILE} -o StrictHostKeyChecking=no ${remoteUser}@${remoteHost} 'mkdir -p ${remotePath}'"
 
+                        // Stop any existing Java processes using port 8080
+                        sh """
+                            ssh -i ${SSH_KEY_FILE} -o StrictHostKeyChecking=no ${remoteUser}@${remoteHost} '
+                                systemctl stop springapp || true
+                                systemctl stop kebabbb || true
+                                fuser -k 8080/tcp || true
+                                sleep 2
+                            '
+                        """
+
                         // Copy the JAR file
                         sh "scp -i ${SSH_KEY_FILE} -o StrictHostKeyChecking=no ${localJarPath} ${remoteUser}@${remoteHost}:${remotePath}/${jarName}"
 
-                        // Create a systemd service file if it doesn't exist
+                        // Create the systemd service file
                         sh """
                             ssh -i ${SSH_KEY_FILE} -o StrictHostKeyChecking=no ${remoteUser}@${remoteHost} 'cat > /etc/systemd/system/springapp.service << EOF
 [Unit]
@@ -46,11 +56,19 @@ WantedBy=multi-user.target
 EOF'
                         """
 
-                        // Enable and restart the service
-                        sh "ssh -i ${SSH_KEY_FILE} -o StrictHostKeyChecking=no ${remoteUser}@${remoteHost} 'systemctl daemon-reload && systemctl enable springapp && systemctl restart springapp'"
+                        // Reload systemd, enable and start service (as separate commands)
+                        sh "ssh -i ${SSH_KEY_FILE} -o StrictHostKeyChecking=no ${remoteUser}@${remoteHost} 'systemctl daemon-reload'"
+                        sh "ssh -i ${SSH_KEY_FILE} -o StrictHostKeyChecking=no ${remoteUser}@${remoteHost} 'systemctl enable springapp'"
+                        sh "ssh -i ${SSH_KEY_FILE} -o StrictHostKeyChecking=no ${remoteUser}@${remoteHost} 'systemctl restart springapp'"
+
+                        // Wait for application to start
+                        sh "ssh -i ${SSH_KEY_FILE} -o StrictHostKeyChecking=no ${remoteUser}@${remoteHost} 'sleep 10'"
 
                         // Check service status
                         sh "ssh -i ${SSH_KEY_FILE} -o StrictHostKeyChecking=no ${remoteUser}@${remoteHost} 'systemctl status springapp'"
+
+                        // Verify application response
+                        sh "ssh -i ${SSH_KEY_FILE} -o StrictHostKeyChecking=no ${remoteUser}@${remoteHost} 'curl -s localhost:8080'"
                     }
                 }
             }
