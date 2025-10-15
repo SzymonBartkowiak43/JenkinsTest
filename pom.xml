@@ -23,7 +23,6 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
-
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
@@ -38,6 +37,21 @@
                 <artifactId>spring-boot-maven-plugin</artifactId>
             </plugin>
 
+            <!-- =================================================================== -->
+            <!-- TEN BLOK MÓWI STANDARDOWEMU PLUGINOWI, ŻEBY NIC NIE ROBIŁ         -->
+            <!-- =================================================================== -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-deploy-plugin</artifactId>
+                <version>3.1.1</version>
+                <configuration>
+                    <skip>true</skip>
+                </configuration>
+            </plugin>
+
+            <!-- =================================================================== -->
+            <!-- NASZ WŁASNY PLUGIN DO WDROŻENIA, KTÓRY ZOSTAWIA BEZ ZMIAN        -->
+            <!-- =================================================================== -->
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>exec-maven-plugin</artifactId>
@@ -58,6 +72,5 @@
             </plugin>
         </plugins>
     </build>
-
 
 </project>
