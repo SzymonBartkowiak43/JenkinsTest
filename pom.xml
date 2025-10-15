@@ -65,7 +65,7 @@
                         </goals>
                         <configuration>
                             <executable>bash</executable>
-                            <commandlineArgs>-c "ssh -i ${SSH_KEY_FILE} -o StrictHostKeyChecking=no root@167.99.243.51 'mkdir -p /root/app' &amp;&amp; scp -i ${SSH_KEY_FILE} -o StrictHostKeyChecking=no target/${project.build.finalName}.jar root@167.99.243.51:/root/app/app.jar &amp;&amp; ssh -i ${SSH_KEY_FILE} -o StrictHostKeyChecking=no root@167.99.243.51 'pkill -f app.jar || true &amp;&amp; nohup java -jar /root/app/app.jar > /root/app/app.log 2>&amp;1 &amp;'"</commandlineArgs>
+                            <commandlineArgs>-c "ssh -i ${SSH_KEY_FILE} -o StrictHostKeyChecking=no root@167.99.243.51 'mkdir -p /root/app' &amp;&amp; scp -i ${SSH_KEY_FILE} -o StrictHostKeyChecking=no target/${project.build.finalName}.jar root@167.99.243.51:/root/app/app.jar &amp;&amp; ssh -i ${SSH_KEY_FILE} -o StrictHostKeyChecking=no root@167.99.243.51 'pkill -f app.jar || true &amp;&amp; nohup /usr/bin/java -jar /root/app/app.jar > /root/app/app.log 2>&amp;1 &amp;'"</commandlineArgs>
                         </configuration>
                     </execution>
                 </executions>
