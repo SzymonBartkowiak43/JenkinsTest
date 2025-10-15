@@ -18,13 +18,13 @@ pipeline {
 
                              def remoteUser = "root"
                              def remoteHost = "167.99.243.51"
-                             def remotePath = "/root/app"
+                             def remotePath = "/opt/kebabbb"
                              def jarName = "app.jar"
                              def localJarPath = "target/jenkins-spring-example-0.0.1-SNAPSHOT.jar"
 
 
                              sh "scp -i ${SSH_KEY_FILE} -o StrictHostKeyChecking=no ${localJarPath} ${remoteUser}@${remoteHost}:${remotePath}/${jarName}"
-     
+
                              sh "ssh -i ${SSH_KEY_FILE} -o StrictHostKeyChecking=no ${remoteUser}@${remoteHost} 'systemctl daemon-reload && systemctl restart kebabbb'"
                          }
                      }
