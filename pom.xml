@@ -48,7 +48,51 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
             </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>wagon-maven-plugin</artifactId>
+                <version>2.0.0</version>
+                <executions>
+                    <execution>
+                        <id>deploy-to-digitalocean</id>
+                        <!-- Uruchom ten plugin w fazie 'deploy' Mavena -->
+                        <phase>deploy</phase>
+                        <goals>
+                            <goal>upload-single</goal>
+                            <goal>sshexec</goal>
+                        </goals>
+                        <configuration>
+                            <!-- Adres URL do połączenia SSH. Zastąp danymi swojego Dropleta -->
+                            <url>scp://root@167.99.243.51/root/app</url>
+
+                            <!-- KROK 1: Przesłanie pliku .jar na serwer -->
+                            <fromFile>${project.build.directory}/${project.build.finalName}.jar</fromFile>
+                            <toFile>app.jar</toFile> <!-- Nazwa pliku na serwerze -->
+
+                            <!-- KROK 2: Wykonanie komend na serwerze -->
+                            <commands>
+                                <command>pkill -f 'java -jar app.jar' || true</command>
+                                <command>nohup java -jar /root/app/app.jar > app.log</command>
+                            </commands>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
+        <extensions>
+            <extension>
+                <groupId>org.apache.maven.wagon</groupId>
+                <artifactId>wagon-ssh</artifactId>
+                <version>3.4.3</version>
+            </extension>
+        </extensions>
     </build>
+
+    <distributionManagement>
+        <repository>
+            <id>digitalocean.server</id>
+            <url>scp://root@167.99.243.51/root/app</url>
+        </repository>
+    </distributionManagement>
 
 </project>
