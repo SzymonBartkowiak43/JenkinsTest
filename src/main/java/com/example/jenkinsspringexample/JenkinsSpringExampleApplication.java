@@ -16,6 +16,6 @@ public class JenkinsSpringExampleApplication {
 
     @GetMapping
     public String get() {
-        return "jajo123";
+        return "test endpoint";
     }
 }

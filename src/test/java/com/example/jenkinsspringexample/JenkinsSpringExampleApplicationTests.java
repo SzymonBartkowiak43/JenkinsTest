@@ -25,6 +25,6 @@ class JenkinsSpringExampleApplicationTests {
         this.mockMvc.perform(get("/"))
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andExpect(content().string("jajo123"));
+                .andExpect(content().string("test endpoint"));
     }
 }
