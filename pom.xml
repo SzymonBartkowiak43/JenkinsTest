@@ -36,40 +36,6 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
             </plugin>
-
-            <!-- =================================================================== -->
-            <!-- TEN BLOK MÓWI STANDARDOWEMU PLUGINOWI, ŻEBY NIC NIE ROBIŁ         -->
-            <!-- =================================================================== -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-deploy-plugin</artifactId>
-                <version>3.1.1</version>
-                <configuration>
-                    <skip>true</skip>
-                </configuration>
-            </plugin>
-
-            <!-- =================================================================== -->
-            <!-- NASZ WŁASNY PLUGIN DO WDROŻENIA, KTÓRY ZOSTAWIA BEZ ZMIAN        -->
-            <!-- =================================================================== -->
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>exec-maven-plugin</artifactId>
-                <version>3.2.0</version>
-                <executions>
-                    <execution>
-                        <id>deploy-to-digitalocean</id>
-                        <phase>deploy</phase>
-                        <goals>
-                            <goal>exec</goal>
-                        </goals>
-                        <configuration>
-                            <executable>bash</executable>
-                            <commandlineArgs>-c "ssh -i ${SSH_KEY_FILE} -o StrictHostKeyChecking=no root@167.99.243.51 'mkdir -p /root/app' &amp;&amp; scp -i ${SSH_KEY_FILE} -o StrictHostKeyChecking=no target/${project.build.finalName}.jar root@167.99.243.51:/root/app/app.jar &amp;&amp; ssh -i ${SSH_KEY_FILE} -o StrictHostKeyChecking=no root@167.99.243.51 'pkill -f app.jar || true &amp;&amp; nohup /usr/bin/java -jar /root/app/app.jar > /root/app/app.log 2>&amp;1 &amp;'"</commandlineArgs>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
         </plugins>
     </build>
 
